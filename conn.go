@@ -503,6 +503,8 @@ func (cn *conn) simpleQuery(q string) (res driver.Rows, err error) {
 	b.string(q)
 	cn.send(b)
 
+	notices := make([]*Error, 0)
+
 	for {
 		t, r := cn.recv1()
 		switch t {
@@ -516,6 +518,8 @@ func (cn *conn) simpleQuery(q string) (res driver.Rows, err error) {
 				errorf("unexpected message %q in simple query execution", t)
 			}
 			res = &rows{st: st, done: true}
+		case 'N':
+			notices = append(notices, parseError(r))
 		case 'Z':
 			cn.processReadyForQuery(r)
 			// done
@@ -523,6 +527,7 @@ func (cn *conn) simpleQuery(q string) (res driver.Rows, err error) {
 		case 'E':
 			res = nil
 			err = parseError(r)
+			err.(*Error).Notices = notices
 		case 'D':
 			if res == nil {
 				cn.bad = true
@@ -776,7 +781,7 @@ func (cn *conn) recv1Buf(r *readBuf) byte {
 		}
 
 		switch t {
-		case 'A', 'N':
+		case 'A':
 			// ignore
 		case 'S':
 			cn.processParameterStatus(r)

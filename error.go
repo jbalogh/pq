@@ -40,6 +40,7 @@ type Error struct {
 	File             string
 	Line             string
 	Routine          string
+	Notices          []*Error
 }
 
 // ErrorCode is a five-character error code.
