@@ -64,7 +64,7 @@ func decode(parameterStatus *parameterStatus, s []byte, typ oid.Oid) interface{}
 			errorf("%s", err)
 		}
 		return i
-	case oid.T_float4, oid.T_float8:
+	case oid.T_float4, oid.T_float8, oid.T_numeric, oid.T__numeric:
 		bits := 64
 		if typ == oid.T_float4 {
 			bits = 32
